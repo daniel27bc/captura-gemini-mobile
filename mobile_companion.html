@@ -38,7 +38,7 @@
   </style>
 </head>
 <body>
-  <iframe id="camera" allow="camera *;microphone *;autoplay;fullscreen;screen-wake-lock"></iframe>
+  <iframe id="camera" allow="camera *;autoplay;fullscreen;screen-wake-lock"></iframe>
   <div class="shade"></div>
   <header>
     <div class="line"><div class="brand">CAPTURA GEMINI</div><div class="state"><span id="led" class="led"></span><span id="connection">Conectando…</span></div></div>
@@ -61,6 +61,7 @@
     const params = new URLSearchParams(location.hash.slice(1));
     const stream = params.get("s") || "";
     const token = params.get("t") || "";
+    const expiresAt = Number(params.get("e") || 0);
     const origin = "https://isolated.vdo.ninja";
     const channel = "gemini-mobile-v1";
     const iframe = document.getElementById("camera");
@@ -84,8 +85,12 @@
     function fatal(text) {
       document.body.innerHTML = `<div class="fatal">${text}</div>`;
     }
-    if (!/^[A-Za-z0-9]{12,64}$/.test(stream) || !/^[A-Za-z0-9]{12,64}$/.test(token)) {
+    if (!/^[A-Za-z0-9]{12,64}$/.test(stream) || !/^[A-Za-z0-9]{12,64}$/.test(token) || !Number.isFinite(expiresAt) || expiresAt <= 0) {
       fatal("Este QR no es válido o ha caducado. Genere uno nuevo desde Captura Gemini.");
+      return;
+    }
+    if (Date.now() > expiresAt * 1000) {
+      fatal("Este QR ha caducado. Genere uno nuevo desde Captura Gemini.");
       return;
     }
 
@@ -135,7 +140,9 @@
       if (event.source !== iframe.contentWindow || event.origin !== origin) return;
       const envelope = event.data && event.data.dataReceived;
       if (!envelope || envelope.channel !== channel || envelope.token !== token) return;
-      if (envelope.type === "state") {
+      if (envelope.type === "pair_expired") {
+        fatal(envelope.message || "El QR ha caducado. Genere uno nuevo desde Captura Gemini.");
+      } else if (envelope.type === "state") {
         cameraReady = Boolean(envelope.camera_ready);
         setPaired(true, cameraReady ? "Conectado" : "Emparejado");
         setArticle(envelope.article);
