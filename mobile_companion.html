@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#0c0e12">
+  <title>Captura Gemini · Móvil</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui,-apple-system,"Segoe UI",sans-serif; }
+    * { box-sizing: border-box; }
+    html,body { width:100%; height:100%; margin:0; overflow:hidden; background:#080a0e; color:#f5f6f8; }
+    #camera { position:fixed; inset:0; width:100%; height:100%; border:0; background:#080a0e; }
+    .shade { position:fixed; inset:0; pointer-events:none; background:linear-gradient(#080a0ecc 0,#080a0e11 28%,#080a0e00 55%,#080a0edd 100%); }
+    header { position:fixed; z-index:2; top:0; left:0; right:0; padding:calc(12px + env(safe-area-inset-top)) 14px 12px; background:#0c0e12df; border-bottom:1px solid #242b38; }
+    .line { display:flex; align-items:center; gap:8px; }
+    .brand { color:#fc4d00; font-size:13px; font-weight:800; letter-spacing:.04em; }
+    .state { margin-left:auto; display:flex; align-items:center; gap:6px; color:#b8c0cc; font-size:12px; }
+    .led { width:9px; height:9px; border-radius:50%; background:#e34850; box-shadow:0 0 8px #e3485088; }
+    .led.ok { background:#39c978; box-shadow:0 0 8px #39c97888; }
+    #article { margin-top:8px; font-size:15px; line-height:1.25; font-weight:750; max-height:2.5em; overflow:hidden; }
+    #refs { margin-top:5px; color:#a8b1c0; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    #still { position:fixed; z-index:3; inset:0; display:none; background:#080a0e; align-items:center; justify-content:center; }
+    #still.show { display:flex; }
+    #still img { width:100%; height:100%; object-fit:contain; }
+    footer { position:fixed; z-index:4; left:0; right:0; bottom:0; padding:12px 14px calc(12px + env(safe-area-inset-bottom)); background:#0c0e12ed; border-top:1px solid #242b38; }
+    #message { min-height:19px; margin-bottom:10px; color:#d8dde6; font-size:12px; text-align:center; }
+    .buttons { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+    button { min-height:54px; border:0; border-radius:8px; padding:9px 12px; color:white; background:#3a414d; font-size:15px; font-weight:750; }
+    button:disabled { opacity:.45; }
+    #capture { grid-column:1/-1; background:#fc4d00; font-size:18px; }
+    #confirm { background:#217a4b; }
+    #retake { background:#8a5a12; }
+    #skip { background:#48556a; }
+    #capture.live-only, #skip.live-only { display:block; }
+    body.review #capture, body.review #skip { display:none; }
+    body:not(.review) #confirm, body:not(.review) #retake { display:none; }
+    .fatal { position:fixed; z-index:10; inset:0; display:flex; padding:28px; align-items:center; justify-content:center; text-align:center; background:#0c0e12; color:#ffabb8; line-height:1.5; }
+  </style>
+</head>
+<body>
+  <iframe id="camera" allow="camera *;microphone *;autoplay;fullscreen;screen-wake-lock"></iframe>
+  <div class="shade"></div>
+  <header>
+    <div class="line"><div class="brand">CAPTURA GEMINI</div><div class="state"><span id="led" class="led"></span><span id="connection">Conectando…</span></div></div>
+    <div id="article">Esperando artículo seleccionado en el PC…</div>
+    <div id="refs"></div>
+  </header>
+  <div id="still"><img id="stillImage" alt="Fotografía capturada"></div>
+  <footer>
+    <div id="message">Permita la cámara y mantenga esta pestaña abierta.</div>
+    <div class="buttons">
+      <button id="capture" disabled>HACER FOTO</button>
+      <button id="skip" disabled>Saltar artículo</button>
+      <button id="retake">Repetir</button>
+      <button id="confirm">Confirmar y guardar</button>
+    </div>
+  </footer>
+  <script>
+  (() => {
+    "use strict";
+    const params = new URLSearchParams(location.hash.slice(1));
+    const stream = params.get("s") || "";
+    const token = params.get("t") || "";
+    const origin = "https://isolated.vdo.ninja";
+    const channel = "gemini-mobile-v1";
+    const iframe = document.getElementById("camera");
+    const article = document.getElementById("article");
+    const refs = document.getElementById("refs");
+    const led = document.getElementById("led");
+    const connection = document.getElementById("connection");
+    const message = document.getElementById("message");
+    const capture = document.getElementById("capture");
+    const confirm = document.getElementById("confirm");
+    const retake = document.getElementById("retake");
+    const skip = document.getElementById("skip");
+    const still = document.getElementById("still");
+    const stillImage = document.getElementById("stillImage");
+    let currentArticle = null;
+    let pendingCapture = null;
+    let previewTransfer = null;
+    let paired = false;
+    let cameraReady = false;
+
+    function fatal(text) {
+      document.body.innerHTML = `<div class="fatal">${text}</div>`;
+    }
+    if (!/^[A-Za-z0-9]{12,64}$/.test(stream) || !/^[A-Za-z0-9]{12,64}$/.test(token)) {
+      fatal("Este QR no es válido o ha caducado. Genere uno nuevo desde Captura Gemini.");
+      return;
+    }
+
+    const css = btoa("#controlButtons,#subControlButtons,#header,#head1,#helpbutton{display:none!important}body{background:#080a0e!important}");
+    iframe.src = `${origin}/?push=${encodeURIComponent(stream)}&webcam&facing=rear&quality=1&noaudio&autostart&cleanish&secure&cssb64=${encodeURIComponent(css)}`;
+
+    function send(payload) {
+      iframe.contentWindow.postMessage({
+        sendData: Object.assign({ channel, token }, payload),
+        type: "pcs"
+      }, "*");
+    }
+
+    function setPaired(value, text) {
+      paired = value;
+      led.classList.toggle("ok", value);
+      connection.textContent = text || (value ? "Conectado" : "Conectando…");
+      capture.disabled = !value || !cameraReady || !currentArticle;
+      skip.disabled = !value || !currentArticle;
+    }
+
+    function setArticle(data) {
+      currentArticle = data && data.id ? data : null;
+      if (!currentArticle) {
+        article.textContent = "Seleccione un artículo en el PC";
+        refs.textContent = "";
+      } else {
+        article.textContent = `#${currentArticle.id} · ${currentArticle.name || "Artículo sin descripción"}`;
+        refs.textContent = `Interna: ${currentArticle.internal_ref || "—"} · Fabricante: ${currentArticle.manufacturer_ref || "—"}`;
+      }
+      capture.disabled = !paired || !cameraReady || !currentArticle;
+      skip.disabled = !paired || !currentArticle;
+    }
+
+    function leaveReview(text) {
+      pendingCapture = null;
+      previewTransfer = null;
+      stillImage.removeAttribute("src");
+      still.classList.remove("show");
+      document.body.classList.remove("review");
+      capture.disabled = !paired || !cameraReady || !currentArticle;
+      confirm.disabled = false;
+      message.textContent = text || "Cámara preparada para otra fotografía.";
+    }
+
+    window.addEventListener("message", event => {
+      if (event.source !== iframe.contentWindow || event.origin !== origin) return;
+      const envelope = event.data && event.data.dataReceived;
+      if (!envelope || envelope.channel !== channel || envelope.token !== token) return;
+      if (envelope.type === "state") {
+        cameraReady = Boolean(envelope.camera_ready);
+        setPaired(true, cameraReady ? "Conectado" : "Emparejado");
+        setArticle(envelope.article);
+        message.textContent = pendingCapture
+          ? "Revise la fotografía."
+          : (cameraReady ? "Encuadre el producto y pulse HACER FOTO." : "Esperando señal de cámara…");
+      } else if (envelope.type === "preview_start") {
+        previewTransfer = { id: envelope.capture_id, total: envelope.total, chunks: [] };
+        message.textContent = "Recibiendo previsualización…";
+      } else if (envelope.type === "preview_chunk" && previewTransfer && previewTransfer.id === envelope.capture_id) {
+        previewTransfer.chunks[envelope.index] = envelope.data;
+      } else if (envelope.type === "preview_end" && previewTransfer && previewTransfer.id === envelope.capture_id) {
+        const complete = previewTransfer.chunks.length === previewTransfer.total && previewTransfer.chunks.every(Boolean);
+        if (!complete) {
+          message.textContent = "La previsualización llegó incompleta. Pulse Repetir.";
+          return;
+        }
+        pendingCapture = previewTransfer.id;
+        stillImage.src = `data:image/jpeg;base64,${previewTransfer.chunks.join("")}`;
+        still.classList.add("show");
+        document.body.classList.add("review");
+        message.textContent = "Revise la fotografía antes de guardarla.";
+      } else if (envelope.type === "capture_result" && envelope.capture_id === pendingCapture) {
+        if (envelope.ok) {
+          leaveReview(envelope.message || "Fotografía guardada correctamente.");
+        } else {
+          message.textContent = envelope.message || "No se pudo guardar la fotografía.";
+          confirm.disabled = false;
+        }
+      } else if (envelope.type === "capture_error") {
+        message.textContent = envelope.message || "No se pudo capturar el fotograma.";
+        leaveReview(message.textContent);
+      } else if (envelope.type === "skipped") {
+        setArticle(envelope.article);
+        message.textContent = "Artículo saltado. Cámara preparada.";
+      }
+    });
+
+    capture.addEventListener("click", () => {
+      if (!currentArticle || !paired || !cameraReady) return;
+      capture.disabled = true;
+      const id = `${Date.now().toString(36)}${Math.random().toString(36).slice(2,8)}`;
+      message.textContent = "Capturando…";
+      send({ type: "capture_request", capture_id: id, article_id: currentArticle.id });
+      setTimeout(() => { if (!pendingCapture) capture.disabled = !paired || !cameraReady || !currentArticle; }, 6000);
+    });
+
+    retake.addEventListener("click", () => {
+      if (pendingCapture) send({ type: "discard_capture", capture_id: pendingCapture });
+      leaveReview("Encuadre de nuevo y pulse HACER FOTO.");
+    });
+
+    confirm.addEventListener("click", () => {
+      if (!pendingCapture || !currentArticle) return;
+      confirm.disabled = true;
+      message.textContent = "Guardando en el PC…";
+      send({ type: "confirm_capture", capture_id: pendingCapture, article_id: currentArticle.id });
+      setTimeout(() => { confirm.disabled = false; }, 7000);
+    });
+
+    skip.addEventListener("click", () => {
+      if (!currentArticle) return;
+      skip.disabled = true;
+      send({ type: "skip_article", article_id: currentArticle.id });
+      setTimeout(() => { skip.disabled = !paired || !currentArticle; }, 2500);
+    });
+
+    iframe.addEventListener("load", () => {
+      send({ type: "hello", client: "mobile", version: 1 });
+    });
+    setInterval(() => {
+      if (!paired) send({ type: "hello", client: "mobile", version: 1 });
+    }, 1600);
+    setInterval(() => {
+      if (paired) send({ type: "ping", at: Date.now() });
+    }, 5000);
+    setPaired(false);
+  })();
+  </script>
+</body>
+</html>
