@@ -3,223 +3,46 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-  <meta name="theme-color" content="#0c0e12">
+  <meta name="theme-color" content="#18181D">
   <title>Captura Gemini · Móvil</title>
   <style>
-    :root { color-scheme: dark; font-family: system-ui,-apple-system,"Segoe UI",sans-serif; }
-    * { box-sizing: border-box; }
-    html,body { width:100%; height:100%; margin:0; overflow:hidden; background:#080a0e; color:#f5f6f8; }
-    #camera { position:fixed; inset:0; width:100%; height:100%; border:0; background:#080a0e; }
-    .shade { position:fixed; inset:0; pointer-events:none; background:linear-gradient(#080a0ecc 0,#080a0e11 28%,#080a0e00 55%,#080a0edd 100%); }
-    header { position:fixed; z-index:2; top:0; left:0; right:0; padding:calc(12px + env(safe-area-inset-top)) 14px 12px; background:#0c0e12df; border-bottom:1px solid #242b38; }
-    .line { display:flex; align-items:center; gap:8px; }
-    .brand { color:#fc4d00; font-size:13px; font-weight:800; letter-spacing:.04em; }
-    .state { margin-left:auto; display:flex; align-items:center; gap:6px; color:#b8c0cc; font-size:12px; }
-    .led { width:9px; height:9px; border-radius:50%; background:#e34850; box-shadow:0 0 8px #e3485088; }
-    .led.ok { background:#39c978; box-shadow:0 0 8px #39c97888; }
-    #article { margin-top:8px; font-size:15px; line-height:1.25; font-weight:750; max-height:2.5em; overflow:hidden; }
-    #refs { margin-top:5px; color:#a8b1c0; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    #still { position:fixed; z-index:3; inset:0; display:none; background:#080a0e; align-items:center; justify-content:center; }
-    #still.show { display:flex; }
-    #still img { width:100%; height:100%; object-fit:contain; }
-    footer { position:fixed; z-index:4; left:0; right:0; bottom:0; padding:12px 14px calc(12px + env(safe-area-inset-bottom)); background:#0c0e12ed; border-top:1px solid #242b38; }
-    #message { min-height:19px; margin-bottom:10px; color:#d8dde6; font-size:12px; text-align:center; }
-    .buttons { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
-    button { min-height:54px; border:0; border-radius:8px; padding:9px 12px; color:white; background:#3a414d; font-size:15px; font-weight:750; }
-    button:disabled { opacity:.45; }
-    #capture { grid-column:1/-1; background:#fc4d00; font-size:18px; }
-    #confirm { background:#217a4b; }
-    #retake { background:#8a5a12; }
-    #skip { background:#48556a; }
-    #capture.live-only, #skip.live-only { display:block; }
-    body.review #capture, body.review #skip { display:none; }
-    body:not(.review) #confirm, body:not(.review) #retake { display:none; }
-    .fatal { position:fixed; z-index:10; inset:0; display:flex; padding:28px; align-items:center; justify-content:center; text-align:center; background:#0c0e12; color:#ffabb8; line-height:1.5; }
+    :root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#101014;color:#F5F7FA}
+    #camera{position:fixed;inset:0;width:100%;height:100%;border:0;background:#101014}.shade{position:fixed;inset:0;pointer-events:none;background:linear-gradient(#18181Dee 0,#18181D22 30%,#18181D00 54%,#18181Dee 100%)}
+    header{position:fixed;z-index:2;top:0;left:0;right:0;padding:calc(10px + env(safe-area-inset-top)) 13px 11px;background:#18181Dee;border-bottom:1px solid #474751}.line{display:flex;align-items:center;gap:8px}.brand{color:#FF4E00;font-size:13px;font-weight:850;letter-spacing:.04em}.state{margin-left:auto;display:flex;align-items:center;gap:6px;color:#CEC6C0;font-size:11px}.led{width:9px;height:9px;border-radius:50%;background:#d84c58;box-shadow:0 0 8px #d84c5888}.led.ok{background:#39c978;box-shadow:0 0 8px #39c97888}
+    #catalogToggle{min-height:34px;margin-left:4px;padding:6px 9px;border:1px solid #6b6b76;border-radius:6px;background:#474751;color:#fff;font-size:11px;font-weight:800}#article{margin-top:8px;font-size:15px;line-height:1.25;font-weight:750;max-height:2.5em;overflow:hidden}#refs{margin-top:5px;color:#CEC6C0;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#selectionSummary{margin-top:5px;color:#FF7A40;font-size:11px;font-weight:750}
+    #still{position:fixed;z-index:3;inset:0;display:none;background:#101014;align-items:center;justify-content:center}#still.show{display:flex}#still img{width:100%;height:100%;object-fit:contain}footer{position:fixed;z-index:4;left:0;right:0;bottom:0;padding:11px 13px calc(11px + env(safe-area-inset-bottom));background:#18181Df2;border-top:1px solid #474751}#message{min-height:18px;margin-bottom:9px;color:#F5F7FA;font-size:12px;text-align:center}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px}button{min-height:52px;border:0;border-radius:8px;padding:9px 12px;color:white;background:#474751;font-size:15px;font-weight:750}button:disabled{opacity:.45}#capture{grid-column:1/-1;background:#FF4E00;font-size:18px}#confirm{background:#24794c}#retake{background:#8a5a12}body.review #capture,body.review #skip{display:none}body:not(.review) #confirm,body:not(.review) #retake{display:none}
+    #catalogPanel{position:fixed;z-index:9;inset:0;display:none;flex-direction:column;background:#18181D}body.catalog-open #catalogPanel{display:flex}.catalog-head{padding:calc(12px + env(safe-area-inset-top)) 14px 11px;border-bottom:1px solid #474751}.catalog-title{display:flex;align-items:center;gap:10px}.catalog-title strong{color:#FF4E00;font-size:16px}#catalogStatus{margin-left:auto;color:#CEC6C0;font-size:11px;text-align:right}.catalog-search{display:grid;grid-template-columns:1fr 120px;gap:8px;margin-top:11px}#catalogQuery,#catalogFilter{width:100%;min-height:43px;border:1px solid #5e5e68;border-radius:7px;padding:8px 10px;background:#24242A;color:#F5F7FA;font-size:15px;outline:none}#catalogQuery:focus{border-color:#FF4E00}#catalogResults{flex:1;overflow:auto;overscroll-behavior:contain;padding:8px 10px 110px}.catalog-empty{padding:28px 12px;color:#CEC6C0;text-align:center;line-height:1.45}.catalog-item{display:grid;grid-template-columns:42px 1fr auto;align-items:center;min-height:67px;margin-bottom:7px;padding:8px 9px;border:1px solid #474751;border-radius:8px;background:#24242A}.catalog-item.active{border-color:#FF4E00;box-shadow:inset 3px 0 #FF4E00}.catalog-item input{width:25px;height:25px;margin:0;accent-color:#FF4E00}.catalog-copy{min-width:0;padding-right:7px}.catalog-name{font-size:13px;font-weight:750;line-height:1.25}.catalog-refs{margin-top:4px;color:#CEC6C0;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.photo-badge{padding:4px 6px;border-radius:5px;background:#474751;color:#CEC6C0;font-size:10px;font-weight:800}.photo-badge.missing{background:#61301f;color:#ffd4c1}.catalog-actions{position:absolute;left:0;right:0;bottom:0;display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:11px 13px calc(11px + env(safe-area-inset-bottom));background:#18181Df7;border-top:1px solid #474751}#closeCatalog{background:#FF4E00}.fatal{position:fixed;z-index:20;inset:0;display:flex;padding:28px;align-items:center;justify-content:center;text-align:center;background:#18181D;color:#ffabb8;line-height:1.5}
   </style>
 </head>
 <body>
-  <iframe id="camera" allow="camera *;autoplay;fullscreen;screen-wake-lock"></iframe>
-  <div class="shade"></div>
-  <header>
-    <div class="line"><div class="brand">CAPTURA GEMINI</div><div class="state"><span id="led" class="led"></span><span id="connection">Conectando…</span></div></div>
-    <div id="article">Esperando artículo seleccionado en el PC…</div>
-    <div id="refs"></div>
-  </header>
+  <iframe id="camera" allow="camera *;autoplay;fullscreen;screen-wake-lock"></iframe><div class="shade"></div>
+  <header><div class="line"><div class="brand">CAPTURA GEMINI</div><div class="state"><span id="led" class="led"></span><span id="connection">Conectando…</span></div><button id="catalogToggle" type="button">ARTÍCULOS · <span id="selectionCount">0</span></button></div><div id="article">Esperando artículo seleccionado…</div><div id="refs"></div><div id="selectionSummary">Ningún artículo marcado</div></header>
   <div id="still"><img id="stillImage" alt="Fotografía capturada"></div>
-  <footer>
-    <div id="message">Permita la cámara y mantenga esta pestaña abierta.</div>
-    <div class="buttons">
-      <button id="capture" disabled>HACER FOTO</button>
-      <button id="skip" disabled>Saltar artículo</button>
-      <button id="retake">Repetir</button>
-      <button id="confirm">Confirmar y guardar</button>
-    </div>
-  </footer>
+  <footer><div id="message">Permita la cámara y mantenga esta pestaña abierta.</div><div class="buttons"><button id="capture" disabled>HACER FOTO</button><button id="skip" disabled>Saltar artículo</button><button id="retake">Repetir</button><button id="confirm">Confirmar y guardar</button></div></footer>
+  <section id="catalogPanel" aria-label="Catálogo de artículos"><div class="catalog-head"><div class="catalog-title"><strong>SELECCIONAR ARTÍCULOS</strong><span id="catalogStatus">Esperando conexión…</span></div><div class="catalog-search"><input id="catalogQuery" type="search" maxlength="80" autocomplete="off" placeholder="ID, nombre o referencia"><select id="catalogFilter"><option>Sin imagen</option><option>Todos</option><option>Con imagen</option><option>Añadidas por Captura Gemini</option></select></div></div><div id="catalogResults"><div class="catalog-empty">Abra la conexión para consultar el catálogo.</div></div><div class="catalog-actions"><button id="clearSelection" type="button">Limpiar selección</button><button id="closeCatalog" type="button">Listo</button></div></section>
   <script>
-  (() => {
-    "use strict";
-    const params = new URLSearchParams(location.hash.slice(1));
-    const stream = params.get("s") || "";
-    const token = params.get("t") || "";
-    const expiresAt = Number(params.get("e") || 0);
-    const origin = "https://isolated.vdo.ninja";
-    const channel = "gemini-mobile-v1";
-    const iframe = document.getElementById("camera");
-    const article = document.getElementById("article");
-    const refs = document.getElementById("refs");
-    const led = document.getElementById("led");
-    const connection = document.getElementById("connection");
-    const message = document.getElementById("message");
-    const capture = document.getElementById("capture");
-    const confirm = document.getElementById("confirm");
-    const retake = document.getElementById("retake");
-    const skip = document.getElementById("skip");
-    const still = document.getElementById("still");
-    const stillImage = document.getElementById("stillImage");
-    let currentArticle = null;
-    let pendingCapture = null;
-    let previewTransfer = null;
-    let paired = false;
-    let cameraReady = false;
-
-    function fatal(text) {
-      document.body.innerHTML = `<div class="fatal">${text}</div>`;
-    }
-    if (!/^[A-Za-z0-9]{12,64}$/.test(stream) || !/^[A-Za-z0-9]{12,64}$/.test(token) || !Number.isFinite(expiresAt) || expiresAt <= 0) {
-      fatal("Este QR no es válido o ha caducado. Genere uno nuevo desde Captura Gemini.");
-      return;
-    }
-    if (Date.now() > expiresAt * 1000) {
-      fatal("Este QR ha caducado. Genere uno nuevo desde Captura Gemini.");
-      return;
-    }
-
-    const css = btoa("#controlButtons,#subControlButtons,#header,#head1,#helpbutton{display:none!important}body{background:#080a0e!important}");
-    iframe.src = `${origin}/?push=${encodeURIComponent(stream)}&webcam&facing=rear&quality=1&noaudio&autostart&cleanish&secure&cssb64=${encodeURIComponent(css)}`;
-
-    function send(payload) {
-      iframe.contentWindow.postMessage({
-        sendData: Object.assign({ channel, token }, payload),
-        type: "pcs"
-      }, "*");
-    }
-
-    function setPaired(value, text) {
-      paired = value;
-      led.classList.toggle("ok", value);
-      connection.textContent = text || (value ? "Conectado" : "Conectando…");
-      capture.disabled = !value || !cameraReady || !currentArticle;
-      skip.disabled = !value || !currentArticle;
-    }
-
-    function setArticle(data) {
-      currentArticle = data && data.id ? data : null;
-      if (!currentArticle) {
-        article.textContent = "Seleccione un artículo en el PC";
-        refs.textContent = "";
-      } else {
-        article.textContent = `#${currentArticle.id} · ${currentArticle.name || "Artículo sin descripción"}`;
-        refs.textContent = `Interna: ${currentArticle.internal_ref || "—"} · Fabricante: ${currentArticle.manufacturer_ref || "—"}`;
-      }
-      capture.disabled = !paired || !cameraReady || !currentArticle;
-      skip.disabled = !paired || !currentArticle;
-    }
-
-    function leaveReview(text) {
-      pendingCapture = null;
-      previewTransfer = null;
-      stillImage.removeAttribute("src");
-      still.classList.remove("show");
-      document.body.classList.remove("review");
-      capture.disabled = !paired || !cameraReady || !currentArticle;
-      confirm.disabled = false;
-      message.textContent = text || "Cámara preparada para otra fotografía.";
-    }
-
-    window.addEventListener("message", event => {
-      if (event.source !== iframe.contentWindow || event.origin !== origin) return;
-      const envelope = event.data && event.data.dataReceived;
-      if (!envelope || envelope.channel !== channel || envelope.token !== token) return;
-      if (envelope.type === "pair_expired") {
-        fatal(envelope.message || "El QR ha caducado. Genere uno nuevo desde Captura Gemini.");
-      } else if (envelope.type === "state") {
-        cameraReady = Boolean(envelope.camera_ready);
-        setPaired(true, cameraReady ? "Conectado" : "Emparejado");
-        setArticle(envelope.article);
-        message.textContent = pendingCapture
-          ? "Revise la fotografía."
-          : (cameraReady ? "Encuadre el producto y pulse HACER FOTO." : "Esperando señal de cámara…");
-      } else if (envelope.type === "preview_start") {
-        previewTransfer = { id: envelope.capture_id, total: envelope.total, chunks: [] };
-        message.textContent = "Recibiendo previsualización…";
-      } else if (envelope.type === "preview_chunk" && previewTransfer && previewTransfer.id === envelope.capture_id) {
-        previewTransfer.chunks[envelope.index] = envelope.data;
-      } else if (envelope.type === "preview_end" && previewTransfer && previewTransfer.id === envelope.capture_id) {
-        const complete = previewTransfer.chunks.length === previewTransfer.total && previewTransfer.chunks.every(Boolean);
-        if (!complete) {
-          message.textContent = "La previsualización llegó incompleta. Pulse Repetir.";
-          return;
-        }
-        pendingCapture = previewTransfer.id;
-        stillImage.src = `data:image/jpeg;base64,${previewTransfer.chunks.join("")}`;
-        still.classList.add("show");
-        document.body.classList.add("review");
-        message.textContent = "Revise la fotografía antes de guardarla.";
-      } else if (envelope.type === "capture_result" && envelope.capture_id === pendingCapture) {
-        if (envelope.ok) {
-          leaveReview(envelope.message || "Fotografía guardada correctamente.");
-        } else {
-          message.textContent = envelope.message || "No se pudo guardar la fotografía.";
-          confirm.disabled = false;
-        }
-      } else if (envelope.type === "capture_error") {
-        message.textContent = envelope.message || "No se pudo capturar el fotograma.";
-        leaveReview(message.textContent);
-      } else if (envelope.type === "skipped") {
-        setArticle(envelope.article);
-        message.textContent = "Artículo saltado. Cámara preparada.";
-      }
-    });
-
-    capture.addEventListener("click", () => {
-      if (!currentArticle || !paired || !cameraReady) return;
-      capture.disabled = true;
-      const id = `${Date.now().toString(36)}${Math.random().toString(36).slice(2,8)}`;
-      message.textContent = "Capturando…";
-      send({ type: "capture_request", capture_id: id, article_id: currentArticle.id });
-      setTimeout(() => { if (!pendingCapture) capture.disabled = !paired || !cameraReady || !currentArticle; }, 6000);
-    });
-
-    retake.addEventListener("click", () => {
-      if (pendingCapture) send({ type: "discard_capture", capture_id: pendingCapture });
-      leaveReview("Encuadre de nuevo y pulse HACER FOTO.");
-    });
-
-    confirm.addEventListener("click", () => {
-      if (!pendingCapture || !currentArticle) return;
-      confirm.disabled = true;
-      message.textContent = "Guardando en el PC…";
-      send({ type: "confirm_capture", capture_id: pendingCapture, article_id: currentArticle.id });
-      setTimeout(() => { confirm.disabled = false; }, 7000);
-    });
-
-    skip.addEventListener("click", () => {
-      if (!currentArticle) return;
-      skip.disabled = true;
-      send({ type: "skip_article", article_id: currentArticle.id });
-      setTimeout(() => { skip.disabled = !paired || !currentArticle; }, 2500);
-    });
-
-    iframe.addEventListener("load", () => {
-      send({ type: "hello", client: "mobile", version: 1 });
-    });
-    setInterval(() => {
-      if (!paired) send({ type: "hello", client: "mobile", version: 1 });
-    }, 1600);
-    setInterval(() => {
-      if (paired) send({ type: "ping", at: Date.now() });
-    }, 5000);
-    setPaired(false);
+  (()=>{"use strict";
+    const params=new URLSearchParams(location.hash.slice(1)),stream=params.get("s")||"",token=params.get("t")||"",expiresAt=Number(params.get("e")||0),origin="https://isolated.vdo.ninja",channel="gemini-mobile-v1",byId=id=>document.getElementById(id),iframe=byId("camera"),article=byId("article"),refs=byId("refs"),selectionSummary=byId("selectionSummary"),selectionCount=byId("selectionCount"),led=byId("led"),connection=byId("connection"),message=byId("message"),capture=byId("capture"),confirm=byId("confirm"),retake=byId("retake"),skip=byId("skip"),still=byId("still"),stillImage=byId("stillImage"),catalogToggle=byId("catalogToggle"),catalogQuery=byId("catalogQuery"),catalogFilter=byId("catalogFilter"),catalogStatus=byId("catalogStatus"),catalogResults=byId("catalogResults");
+    let currentArticle=null,selectedIds=new Set(),catalogItems=[],pendingCapture=null,previewTransfer=null,paired=false,cameraReady=false,searchTimer=null,latestRequestId="";
+    function fatal(text){const box=document.createElement("div");box.className="fatal";box.textContent=text;document.body.replaceChildren(box)}
+    if(!/^[A-Za-z0-9]{12,64}$/.test(stream)||!/^[A-Za-z0-9]{12,64}$/.test(token)||!Number.isFinite(expiresAt)||expiresAt<=0){fatal("Este QR no es válido o ha caducado. Genere uno nuevo desde Captura Gemini.");return}if(Date.now()>expiresAt*1000){fatal("Este QR ha caducado. Genere uno nuevo desde Captura Gemini.");return}
+    const css=btoa("#controlButtons,#subControlButtons,#header,#head1,#helpbutton{display:none!important}body{background:#101014!important}");iframe.src=`${origin}/?push=${encodeURIComponent(stream)}&webcam&facing=rear&quality=1&noaudio&autostart&cleanish&secure&cssb64=${encodeURIComponent(css)}`;
+    function send(payload){iframe.contentWindow.postMessage({sendData:Object.assign({channel,token},payload),type:"pcs"},"*")}
+    function updateButtons(){capture.disabled=!paired||!cameraReady||!currentArticle;skip.disabled=!paired||!currentArticle}
+    function updateSelectionSummary(){const count=selectedIds.size;selectionCount.textContent=String(count);selectionSummary.textContent=count?`${count} artículo${count===1?"":"s"} recibirá${count===1?"":"n"} la próxima foto`:"Ningún artículo marcado"}
+    function setPaired(value,text){paired=value;led.classList.toggle("ok",value);connection.textContent=text||(value?"Conectado":"Conectando…");updateButtons()}
+    function setArticle(data){currentArticle=data&&data.id?data:null;if(!currentArticle){article.textContent="Seleccione uno o varios artículos";refs.textContent="Abra ARTÍCULOS para buscar en el catálogo"}else{article.textContent=`#${currentArticle.id} · ${currentArticle.name||"Artículo sin descripción"}`;refs.textContent=`Interna: ${currentArticle.internal_ref||"—"} · Fabricante: ${currentArticle.manufacturer_ref||"—"}`}updateButtons();renderCatalog()}
+    function applyDesktopSelection(values){selectedIds=new Set((values||[]).map(Number).filter(id=>Number.isInteger(id)&&id>0).slice(0,200));if(currentArticle&&!selectedIds.has(Number(currentArticle.id)))selectedIds.add(Number(currentArticle.id));updateSelectionSummary();renderCatalog()}
+    function sendSelection(){send({type:"selection_update",active_article_id:currentArticle?Number(currentArticle.id):null,selected_ids:Array.from(selectedIds)});updateSelectionSummary();renderCatalog()}
+    function chooseArticle(item){selectedIds.add(Number(item.id));setArticle(item);sendSelection()}
+    function toggleArticle(item,checked){const id=Number(item.id);if(checked){selectedIds.add(id);if(!currentArticle)setArticle(item)}else{selectedIds.delete(id);if(currentArticle&&Number(currentArticle.id)===id){const nextId=Array.from(selectedIds)[0],nextItem=catalogItems.find(value=>Number(value.id)===nextId);setArticle(nextItem||(nextId?{id:nextId,name:"Artículo seleccionado"}:null))}}sendSelection()}
+    function renderCatalog(){if(!catalogResults||!catalogItems)return;catalogResults.replaceChildren();if(!catalogItems.length){const empty=document.createElement("div");empty.className="catalog-empty";empty.textContent=paired?"No hay artículos que coincidan con la búsqueda.":"Esperando conexión con el PC…";catalogResults.appendChild(empty);return}catalogItems.forEach(item=>{const id=Number(item.id),row=document.createElement("div");row.className="catalog-item"+(currentArticle&&Number(currentArticle.id)===id?" active":"");const check=document.createElement("input");check.type="checkbox";check.checked=selectedIds.has(id);check.setAttribute("aria-label",`Marcar artículo ${id}`);check.addEventListener("change",event=>{event.stopPropagation();toggleArticle(item,check.checked)});const copy=document.createElement("div");copy.className="catalog-copy";const name=document.createElement("div");name.className="catalog-name";name.textContent=`#${id} · ${item.name||"Artículo sin descripción"}`;const itemRefs=document.createElement("div");itemRefs.className="catalog-refs";itemRefs.textContent=`${item.internal_ref||"—"} · ${item.manufacturer_ref||"—"}`;copy.append(name,itemRefs);copy.addEventListener("click",()=>chooseArticle(item));const badge=document.createElement("span");badge.className="photo-badge"+(item.has_photo?"":" missing");badge.textContent=item.has_photo?(item.captured_by_gemini?"CAPTURA":"CON FOTO"):"SIN FOTO";badge.addEventListener("click",()=>chooseArticle(item));row.append(check,copy,badge);catalogResults.appendChild(row)})}
+    function requestCatalog(){if(!paired)return;latestRequestId=`${Date.now().toString(36)}${Math.random().toString(36).slice(2,7)}`;catalogStatus.textContent="Buscando…";send({type:"catalog_request",request_id:latestRequestId,query:catalogQuery.value.trim(),filter:catalogFilter.value})}
+    function leaveReview(text){pendingCapture=null;previewTransfer=null;stillImage.removeAttribute("src");still.classList.remove("show");document.body.classList.remove("review");updateButtons();confirm.disabled=false;message.textContent=text||"Cámara preparada para otra fotografía."}
+    window.addEventListener("message",event=>{if(event.source!==iframe.contentWindow||event.origin!==origin)return;const envelope=event.data&&event.data.dataReceived;if(!envelope||envelope.channel!==channel||envelope.token!==token)return;if(envelope.type==="pair_expired"){fatal(envelope.message||"El QR ha caducado. Genere uno nuevo desde Captura Gemini.")}else if(envelope.type==="state"){cameraReady=Boolean(envelope.camera_ready);setPaired(true,cameraReady?"Conectado":"Emparejado");setArticle(envelope.article);applyDesktopSelection(envelope.selected_ids);message.textContent=pendingCapture?"Revise la fotografía.":(cameraReady?"Encuadre el producto y pulse HACER FOTO.":"Esperando señal de cámara…")}else if(envelope.type==="catalog_result"){if(envelope.request_id&&envelope.request_id!==latestRequestId)return;if(!envelope.ok){catalogItems=[];catalogStatus.textContent="Error";message.textContent=envelope.message||"No se pudo consultar el catálogo."}else{catalogItems=Array.isArray(envelope.items)?envelope.items:[];catalogStatus.textContent=`${catalogItems.length} de ${Number(envelope.total||0)}`}renderCatalog()}else if(envelope.type==="selection_result"&&!envelope.ok){message.textContent=envelope.message||"El PC rechazó la selección."}else if(envelope.type==="preview_start"){previewTransfer={id:envelope.capture_id,total:envelope.total,chunks:[]};message.textContent="Recibiendo previsualización…"}else if(envelope.type==="preview_chunk"&&previewTransfer&&previewTransfer.id===envelope.capture_id){previewTransfer.chunks[envelope.index]=envelope.data}else if(envelope.type==="preview_end"&&previewTransfer&&previewTransfer.id===envelope.capture_id){const complete=previewTransfer.chunks.length===previewTransfer.total&&previewTransfer.chunks.every(Boolean);if(!complete){message.textContent="La previsualización llegó incompleta. Pulse Repetir.";return}pendingCapture=previewTransfer.id;stillImage.src=`data:image/jpeg;base64,${previewTransfer.chunks.join("")}`;still.classList.add("show");document.body.classList.add("review");message.textContent="Revise la fotografía antes de guardarla."}else if(envelope.type==="capture_result"&&envelope.capture_id===pendingCapture){if(envelope.ok)leaveReview(envelope.message||"Fotografía guardada correctamente.");else{message.textContent=envelope.message||"No se pudo guardar la fotografía.";confirm.disabled=false}}else if(envelope.type==="capture_error"){leaveReview(envelope.message||"No se pudo capturar el fotograma.")}else if(envelope.type==="skipped"){setArticle(envelope.article);message.textContent="Artículo saltado. Cámara preparada."}});
+    catalogToggle.addEventListener("click",()=>{if(document.body.classList.contains("review"))return;document.body.classList.add("catalog-open");requestCatalog();setTimeout(()=>catalogQuery.focus(),80)});byId("closeCatalog").addEventListener("click",()=>document.body.classList.remove("catalog-open"));byId("clearSelection").addEventListener("click",()=>{selectedIds.clear();setArticle(null);sendSelection()});catalogQuery.addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(requestCatalog,280)});catalogFilter.addEventListener("change",requestCatalog);
+    capture.addEventListener("click",()=>{if(!currentArticle||!paired||!cameraReady)return;capture.disabled=true;const id=`${Date.now().toString(36)}${Math.random().toString(36).slice(2,8)}`;message.textContent="Capturando…";send({type:"capture_request",capture_id:id,article_id:currentArticle.id});setTimeout(()=>{if(!pendingCapture)updateButtons()},6000)});retake.addEventListener("click",()=>{if(pendingCapture)send({type:"discard_capture",capture_id:pendingCapture});leaveReview("Encuadre de nuevo y pulse HACER FOTO.")});confirm.addEventListener("click",()=>{if(!pendingCapture||!currentArticle)return;confirm.disabled=true;message.textContent="Guardando en el PC…";send({type:"confirm_capture",capture_id:pendingCapture,article_id:currentArticle.id});setTimeout(()=>{confirm.disabled=false},7000)});skip.addEventListener("click",()=>{if(!currentArticle)return;skip.disabled=true;send({type:"skip_article",article_id:currentArticle.id});setTimeout(updateButtons,2500)});
+    iframe.addEventListener("load",()=>send({type:"hello",client:"mobile",version:2}));setInterval(()=>{if(!paired)send({type:"hello",client:"mobile",version:2})},1600);setInterval(()=>{if(paired)send({type:"ping",at:Date.now()})},5000);setPaired(false);updateSelectionSummary()
   })();
   </script>
 </body>
